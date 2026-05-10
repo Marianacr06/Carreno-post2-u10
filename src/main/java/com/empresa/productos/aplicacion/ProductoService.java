@@ -2,34 +2,22 @@ package com.empresa.productos.aplicacion;
 
 import com.empresa.productos.dominio.Producto;
 import com.empresa.productos.repositorio.ProductoRepository;
-import java.util.NoSuchElementException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProductoService {
-    private final ProductoRepository productoRepository;
 
-    public ProductoService(ProductoRepository productoRepository) {
-        this.productoRepository = productoRepository;
-    }
+    @Autowired
+    private ProductoRepository repo;
 
     public Producto buscar(Long id) {
-        return productoRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("Producto no encontrado: " + id));
+        return repo.findById(id).orElse(null);
     }
 
     public Producto procesarProducto(String nombre, Double precio, Integer stock) {
-        validarDatos(nombre, precio, stock);
-        Producto producto = new Producto();
-        producto.setNombre(nombre.strip());
-        producto.setPrecio(precio);
-        producto.setStock(stock);
-        return productoRepository.save(producto);
-    }
-
-    private void validarDatos(String nombre, Double precio, Integer stock) {
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre no puede estar vacio");
+        if (nombre == null || nombre.equals("")) {
+            throw new IllegalArgumentException("nombre requerido");
         }
         if (precio == null || precio <= 0) {
             throw new IllegalArgumentException("El precio debe ser mayor a cero");
@@ -40,5 +28,10 @@ public class ProductoService {
         if (stock == null || stock < 0) {
             throw new IllegalArgumentException("El stock no puede ser negativo");
         }
+        Producto producto = new Producto();
+        producto.setNombre(nombre.strip());
+        producto.setPrecio(precio);
+        producto.setStock(stock);
+        return repo.save(producto);
     }
 }
